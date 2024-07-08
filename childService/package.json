@@ -1,5 +1,5 @@
 {
-  "name": "gcp_nodejs_newrelic_demo",
+  "name": "gcp_nodejs_newrelic_demo_child",
   "description": "Simple hello world sample in Node",
   "version": "1.0.0",
   "private": true,
@@ -16,7 +16,6 @@
   "dependencies": {
     "dotenv": "^16.4.5",
     "express": "^4.17.1",
-    "newrelic": "^11.22.0",
-    "node-fetch": "^3.3.2"
+    "newrelic": "^11.22.0"
   }
 }
