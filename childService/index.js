@@ -24,6 +24,7 @@ const logger = winston.createLogger({
 
 app.get('/', (req, res) => {
   const name = process.env.NAME || 'World';
+  logger.info(`child service invoked via HTTP request`);
   res.send(`Hello ${name}!`);
 });
 
@@ -42,11 +43,11 @@ async function listenForMessages() {
   subscription.on('message', message => {
     const headersObject = message.attributes;
 
-    newrelic.startBackgroundTransaction('pubsub-background', function executeTransaction() {
+    newrelic.startBackgroundTransaction('pubsub-child', function executeTransaction() {
       const transaction = newrelic.getTransaction();
 
       const isSampled = transaction.isSampled();
-      logger.info(`newRelicHeaders, (isSampled = ${isSampled}): ${JSON.stringify(newRelicHeaders)}`);
+      logger.info(`newRelicHeaders, (isSampled = ${isSampled}): ${JSON.stringify(headersObject)}`);
       transaction.acceptDistributedTraceHeaders('Queue', headersObject);
 
       // add custom span attribute

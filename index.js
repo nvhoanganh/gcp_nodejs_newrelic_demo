@@ -38,7 +38,7 @@ app.get('/pubsub', async (req, res) => {
 
   // This could be a header object from an incoming request as well
   const newRelicHeaders = {};
-  newrelic.startBackgroundTransaction('pubsub-background', async function executeTransaction() {
+  newrelic.startBackgroundTransaction('pubsub-parent', async function executeTransaction() {
     const transaction = newrelic.getTransaction();
     // generate the headers
     transaction.insertDistributedTraceHeaders(newRelicHeaders);
@@ -59,9 +59,9 @@ app.get('/pubsub', async (req, res) => {
         ...newRelicHeaders
       }
     });
+    transaction.end();
+    res.send(`sent "${msg}" to child service via pubsub!`);
   });
-
-  res.send(`sent "${msg}" to child service via pubsub!`);
 });
 
 const port = parseInt(process.env.PORT) || 8080;
