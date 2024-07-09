@@ -79,3 +79,8 @@ subscription.on('message', message => {
     });
   });
 ```
+
+# Add Logs in Context
+- install `winston` and `@newrelic/winston-enricher` package
+- follow this https://newrelic.com/blog/how-to-relic/google-cloud-logs-agentless to forward GCloud logs to New Relic
+- use the following code for the Log forwarder function instead [log-forwarder.js](./log-forwarder.js) (to flatten the nested JSON log)
