@@ -43,3 +43,39 @@ gcloud run deploy --update-env-vars NEW_RELIC_NO_CONFIG_FILE=true,NEW_RELIC_LICE
 
 - authenticate using `gcloud auth application-default login`
 - add pubsub client using https://cloud.google.com/nodejs/docs/reference/pubsub/latest#using-the-client-library
+
+# Add Distributed Tracing using NewRelic NodeJS SDK
+
+- Calling (parent) service can be instrumented like this
+
+```js
+app.get('/pubsub', async (req, res) => {
+  const msg = req.query.message || 'Hello';
+  const newRelicHeaders = {};
+  newrelic.startBackgroundTransaction('pubsub-background', async function executeTransaction() {
+    const transaction = newrelic.getTransaction();
+    transaction.insertDistributedTraceHeaders(newRelicHeaders);
+
+    const topic = await createTopicClient();
+    topic.publishMessage({
+      data: Buffer.from(msg),
+      attributes: {
+        ...newRelicHeaders
+      }
+    });
+  });
+});
+```
+
+- Called (child) service can be instrumented like this
+
+```js
+subscription.on('message', message => {
+    const headersObject = message.attributes;
+    newrelic.startBackgroundTransaction('pubsub-background', function executeTransaction() {
+      const transaction = newrelic.getTransaction();
+      transaction.acceptDistributedTraceHeaders('Queue', headersObject);
+      transaction.end();
+    });
+  });
+```
