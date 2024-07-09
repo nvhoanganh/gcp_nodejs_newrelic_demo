@@ -20,7 +20,7 @@ const logger = winston.createLogger({
     new winston.transports.Console()
   ],
 });
-global.console.log = (...args) => logger.info.call(logger, ...args);
+
 
 const app = express();
 
@@ -28,13 +28,13 @@ app.get('/', async (req, res) => {
   const response = await fetch(process.env.CHILD_SERVICE);
   const body = await response.text();
 
-  console.log(`child service return ${body}`);
+  logger.info(`child service return ${body}`);
   res.send(`Child service said: ${body}!`);
 });
 
 app.get('/pubsub', async (req, res) => {
   const msg = req.query.message || 'Hello';
-  console.log(`sending request to child service via pubsub`, msg);
+  logger.info(`sending request to child service via pubsub: ${msg}`);
 
   // This could be a header object from an incoming request as well
   const newRelicHeaders = {};
@@ -43,7 +43,7 @@ app.get('/pubsub', async (req, res) => {
     // generate the headers
     transaction.insertDistributedTraceHeaders(newRelicHeaders);
     const isSampled = transaction.isSampled();
-    console.log(`newRelicHeaders, (isSampled = ${isSampled})`, newRelicHeaders);
+    logger.info(`newRelicHeaders, (isSampled = ${isSampled}): ${JSON.stringify(newRelicHeaders)}`);
 
     // add custom span attribute
     const attributes = {
@@ -66,11 +66,11 @@ app.get('/pubsub', async (req, res) => {
 
 const port = parseInt(process.env.PORT) || 8080;
 app.listen(port, () => {
-  console.log(`helloworld: listening on port ${port}`);
+  logger.info(`helloworld: listening on port ${port}`);
 });
 
 async function createTopicClient() {
-  console.log(`Creating topic ${process.env.TOPIC_NAME}...`);
+  logger.info(`Creating topic ${process.env.TOPIC_NAME}...`);
   const pubsub = new PubSub({ projectId: process.env.GCLOUD_PROJECTID });
   const topicNameOrId = process.env.TOPIC_NAME;
 

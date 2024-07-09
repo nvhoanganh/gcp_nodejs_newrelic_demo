@@ -16,12 +16,11 @@ const logger = winston.createLogger({
     winston.format.json(),
     newrelicWinstonFormatter()
   ),
-  defaultMeta: { service: 'parent' },
+  defaultMeta: { service: 'child' },
   transports: [
     new winston.transports.Console()
   ],
 });
-global.console.log = (...args) => logger.info.call(logger, ...args);
 
 app.get('/', (req, res) => {
   const name = process.env.NAME || 'World';
@@ -31,7 +30,7 @@ app.get('/', (req, res) => {
 const port = parseInt(process.env.PORT) || 8081;
 app.listen(port, () => {
   listenForMessages();
-  console.log(`child service listening on port ${port} and on topic ${process.env.TOPIC_NAME}`);
+  logger.info(`child service listening on port ${port} and on topic ${process.env.TOPIC_NAME}`);
 });
 
 
@@ -47,7 +46,7 @@ async function listenForMessages() {
       const transaction = newrelic.getTransaction();
 
       const isSampled = transaction.isSampled();
-      console.log(`calling acceptDistributedTraceHeaders on headers, (isSampled = ${isSampled}):`, headersObject);
+      logger.info(`newRelicHeaders, (isSampled = ${isSampled}): ${JSON.stringify(newRelicHeaders)}`);
       transaction.acceptDistributedTraceHeaders('Queue', headersObject);
 
       // add custom span attribute
@@ -55,15 +54,14 @@ async function listenForMessages() {
         message: message.data.toString()
       };
       newrelic.addCustomSpanAttributes(attributes);
-
+      logger.info(`Received message: ${message.data.toString()}`);
       transaction.end();
-      console.log(`Received message:`, message.data.toString());
     });
   });
 
   // Receive callbacks for errors on the subscription
   subscription.on('error', error => {
-    console.error('Received error:', error);
+    logger.error('Received error:', error);
   });
 }
 
