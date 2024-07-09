@@ -38,3 +38,8 @@ import newrelic from 'newrelic';
 ```bash
 gcloud run deploy --update-env-vars NEW_RELIC_NO_CONFIG_FILE=true,NEW_RELIC_LICENSE_KEY=xxxxxx1FFFFNRAL,NEW_RELIC_APP_NAME=gcloudrun-nodejs-demo,NEW_RELIC_DISTRIBUTED_TRACING_ENABLED=true
 ```
+
+# Add PubSub client
+
+- authenticate using `gcloud auth application-default login`
+- add pubsub client using https://cloud.google.com/nodejs/docs/reference/pubsub/latest#using-the-client-library
