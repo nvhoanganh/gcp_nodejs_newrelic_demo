@@ -6,13 +6,29 @@ import fetch from 'node-fetch';
 
 import { PubSub } from '@google-cloud/pubsub'
 
+import winston from 'winston';
+import newrelicFormatter from '@newrelic/winston-enricher';
+const newrelicWinstonFormatter = newrelicFormatter(winston);
+const logger = winston.createLogger({
+  level: 'info',
+  format: winston.format.combine(
+    winston.format.json(),
+    newrelicWinstonFormatter()
+  ),
+  defaultMeta: { service: 'parent' },
+  transports: [
+    new winston.transports.Console()
+  ],
+});
+global.console.log = (...args) => logger.info.call(logger, ...args);
+
 const app = express();
 
 app.get('/', async (req, res) => {
   const response = await fetch(process.env.CHILD_SERVICE);
   const body = await response.text();
 
-  console.log(`child service return`, body);
+  console.log(`child service return ${body}`);
   res.send(`Child service said: ${body}!`);
 });
 

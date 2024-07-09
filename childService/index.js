@@ -7,7 +7,21 @@ import { PubSub } from '@google-cloud/pubsub'
 
 const app = express();
 
-
+import winston from 'winston';
+import newrelicFormatter from '@newrelic/winston-enricher';
+const newrelicWinstonFormatter = newrelicFormatter(winston);
+const logger = winston.createLogger({
+  level: 'info',
+  format: winston.format.combine(
+    winston.format.json(),
+    newrelicWinstonFormatter()
+  ),
+  defaultMeta: { service: 'parent' },
+  transports: [
+    new winston.transports.Console()
+  ],
+});
+global.console.log = (...args) => logger.info.call(logger, ...args);
 
 app.get('/', (req, res) => {
   const name = process.env.NAME || 'World';
