@@ -51,8 +51,9 @@ gcloud run deploy --update-env-vars NEW_RELIC_NO_CONFIG_FILE=true,NEW_RELIC_LICE
 ```js
 app.get('/pubsub', async (req, res) => {
   const msg = req.query.message || 'Hello';
+
   const newRelicHeaders = {};
-  newrelic.startBackgroundTransaction('pubsub-background', async function executeTransaction() {
+  newrelic.startBackgroundTransaction('pubsub-parent', async function executeTransaction() {
     const transaction = newrelic.getTransaction();
     transaction.insertDistributedTraceHeaders(newRelicHeaders);
 
@@ -63,6 +64,7 @@ app.get('/pubsub', async (req, res) => {
         ...newRelicHeaders
       }
     });
+    transaction.end();
   });
 });
 ```
@@ -72,7 +74,7 @@ app.get('/pubsub', async (req, res) => {
 ```js
 subscription.on('message', message => {
     const headersObject = message.attributes;
-    newrelic.startBackgroundTransaction('pubsub-background', function executeTransaction() {
+    newrelic.startBackgroundTransaction('pubsub-child', function executeTransaction() {
       const transaction = newrelic.getTransaction();
       transaction.acceptDistributedTraceHeaders('Queue', headersObject);
       transaction.end();
