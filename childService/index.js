@@ -47,7 +47,7 @@ async function listenForMessages() {
       const transaction = newrelic.getTransaction();
 
       const isSampled = transaction.isSampled();
-      logger.info(`newRelicHeaders, (isSampled = ${isSampled}): ${JSON.stringify(headersObject)}`);
+      logger.info(`child newRelicHeaders, (isSampled = ${isSampled}, message received: ${message.data.toString()}): ${JSON.stringify(headersObject)}`);
       transaction.acceptDistributedTraceHeaders('Queue', headersObject);
 
       // add custom span attribute

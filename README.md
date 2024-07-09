@@ -80,6 +80,8 @@ subscription.on('message', message => {
   });
 ```
 
+- redeploy, make sure the `--no-cpu-throttling` is on for the Child service otherwise DT will not work (since the New Relic APM agent sends the data in different thread to the main thread)
+
 # Add Logs in Context
 - install `winston` and `@newrelic/winston-enricher` package
 - follow this https://newrelic.com/blog/how-to-relic/google-cloud-logs-agentless to forward GCloud logs to New Relic

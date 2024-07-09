@@ -43,7 +43,7 @@ app.get('/pubsub', async (req, res) => {
     // generate the headers
     transaction.insertDistributedTraceHeaders(newRelicHeaders);
     const isSampled = transaction.isSampled();
-    logger.info(`newRelicHeaders, (isSampled = ${isSampled}): ${JSON.stringify(newRelicHeaders)}`);
+    logger.info(`parent newRelicHeaders, (isSampled = ${isSampled}, message sent: ${msg}): ${JSON.stringify(newRelicHeaders)}`);
 
     // add custom span attribute
     const attributes = {
