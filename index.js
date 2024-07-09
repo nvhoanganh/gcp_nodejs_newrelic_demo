@@ -19,10 +19,32 @@ app.get('/', async (req, res) => {
 app.get('/pubsub', async (req, res) => {
   const msg = req.query.message || 'Hello';
   console.log(`sending request to child service via pubsub`, msg);
-  const topic = await createTopicClient();
-  topic.publishMessage({
-    data: Buffer.from(msg)
+
+  // This could be a header object from an incoming request as well
+  const newRelicHeaders = {};
+  newrelic.startBackgroundTransaction('pubsub-background', async function executeTransaction() {
+    const transaction = newrelic.getTransaction();
+    // generate the headers
+    transaction.insertDistributedTraceHeaders(newRelicHeaders);
+    const isSampled = transaction.isSampled();
+    console.log(`newRelicHeaders, (isSampled = ${isSampled})`, newRelicHeaders);
+
+    // add custom span attribute
+    const attributes = {
+      userAgent: req.headers['user-agent']
+    };
+
+    newrelic.addCustomSpanAttributes(attributes);
+
+    const topic = await createTopicClient();
+    topic.publishMessage({
+      data: Buffer.from(msg),
+      attributes: {
+        ...newRelicHeaders
+      }
+    });
   });
+
   res.send(`sent "${msg}" to child service via pubsub!`);
 });
 

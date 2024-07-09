@@ -25,8 +25,26 @@ async function listenForMessages() {
   const { topic, subscription } = await createSubscription();
 
   // Receive callbacks for new messages on the subscription
+
   subscription.on('message', message => {
-    console.log(`Received message:`, message.data.toString());
+    const headersObject = message.attributes;
+
+    newrelic.startBackgroundTransaction('pubsub-background', function executeTransaction() {
+      const transaction = newrelic.getTransaction();
+
+      const isSampled = transaction.isSampled();
+      console.log(`calling acceptDistributedTraceHeaders on headers, (isSampled = ${isSampled}):`, headersObject);
+      transaction.acceptDistributedTraceHeaders('Queue', headersObject);
+
+      // add custom span attribute
+      const attributes = {
+        message: message.data.toString()
+      };
+      newrelic.addCustomSpanAttributes(attributes);
+
+      transaction.end();
+      console.log(`Received message:`, message.data.toString());
+    });
   });
 
   // Receive callbacks for errors on the subscription
